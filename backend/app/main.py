@@ -2,9 +2,14 @@ from fastapi import FastAPI, Depends
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app import models
+from app.database import Base, engine, get_db
+from app.routers import auth
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="StockQuest API")
+app.include_router(auth.router)
 
 
 @app.get("/")
