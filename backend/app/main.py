@@ -4,13 +4,16 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.database import Base, engine, get_db
-from app.routers import auth
+from app.routers import auth, stocks, trades
+from app.seed import seed_stocks
 
 Base.metadata.create_all(bind=engine)
+seed_stocks()
 
 app = FastAPI(title="StockQuest API")
 app.include_router(auth.router)
-
+app.include_router(stocks.router)
+app.include_router(trades.router)
 
 @app.get("/")
 def home():

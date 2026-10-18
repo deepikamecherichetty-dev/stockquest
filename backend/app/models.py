@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from sqlalchemy import (
     Column, Integer, String, Numeric, DateTime, ForeignKey, UniqueConstraint
 )
@@ -39,6 +40,7 @@ class Trade(Base):
     side = Column(String(4), nullable=False)  # "BUY" or "SELL"
     quantity = Column(Integer, nullable=False)
     price = Column(Numeric(12, 2), nullable=False)
+    realized_pnl = Column(Numeric(12, 2), nullable=False, default=0)  # profit on SELL
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="trades")
