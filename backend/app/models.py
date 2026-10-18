@@ -40,7 +40,7 @@ class Trade(Base):
     side = Column(String(4), nullable=False)  # "BUY" or "SELL"
     quantity = Column(Integer, nullable=False)
     price = Column(Numeric(12, 2), nullable=False)
-    realized_pnl = Column(Numeric(12, 2), nullable=False, default=0)  # profit on SELL
+    realized_pnl = Column(Numeric(12, 2), nullable=False, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="trades")
@@ -59,3 +59,12 @@ class Holding(Base):
 
     user = relationship("User", back_populates="holdings")
     stock = relationship("Stock")
+
+
+class PriceHistory(Base):
+    __tablename__ = "price_history"
+
+    id = Column(Integer, primary_key=True)
+    stock_id = Column(Integer, ForeignKey("stocks.id"), nullable=False, index=True)
+    price = Column(Numeric(12, 2), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
