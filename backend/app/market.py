@@ -40,17 +40,34 @@ def ensure_baseline():
         db.close()
 
 
+def snapshot_portfolios(db, prices: dict):
+    """Save every user's total value (cash + shares at current prices)."""
+    holdings_by_user = {}
+    for h in db.query(models.Holding).all():
+        holdings_by_user.setdefault(h.user_id, []).append(h)
+
+    for user in db.query(models.User).all():
+        value = Decimal(user.cash_balance)
+        for h in holdings_by_user.get(user.id, []):
+            value += prices[h.stock_id] * h.quantity
+        db.add(models.PortfolioSnapshot(user_id=user.id, total_value=value))
+
+
 def tick():
     params = load_params()
     db = SessionLocal()
     try:
+        prices = {}
         for stock in db.query(models.Stock).all():
             p = params.get(stock.symbol, {})
             mu = p.get("mu", DEFAULT_MU)
             sigma = p.get("sigma", DEFAULT_SIGMA)
             new_price = max(round(gbm_step(float(stock.current_price), mu, sigma), 2), 1.0)
             stock.current_price = Decimal(str(new_price))
+            prices[stock.id] = stock.current_price
             db.add(models.PriceHistory(stock_id=stock.id, price=stock.current_price))
+
+        snapshot_portfolios(db, prices)
         db.commit()
     finally:
         db.close()
